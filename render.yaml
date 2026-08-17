@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: soundsearch-api
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      # Set this to your deployed frontend's origin (e.g. https://your-app.vercel.app)
+      # once you know it, so the browser is allowed to call this API.
+      - key: AllowedOrigin
+        value: http://localhost:5173
