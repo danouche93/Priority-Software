@@ -1,7 +1,8 @@
-import { LayoutGroup, MotionConfig } from 'framer-motion'
+import { MotionConfig } from 'framer-motion'
 import { useCallback, useState } from 'react'
 import './App.css'
 import type { TrackResult } from './api/types'
+import { FlyingImage, type FlyRect } from './components/FlyingImage/FlyingImage'
 import { ImageContainer } from './components/ImageContainer/ImageContainer'
 import { PaginationControls } from './components/PaginationControls/PaginationControls'
 import { RecentSearches } from './components/RecentSearches/RecentSearches'
@@ -10,9 +11,16 @@ import { SearchBox } from './components/SearchBox/SearchBox'
 import { EmptyState } from './components/StatusStates/EmptyState'
 import { ErrorState } from './components/StatusStates/ErrorState'
 import { LoadingIndicator } from './components/StatusStates/LoadingIndicator'
+import { IMAGE_CONTAINER_SLOT_ID } from './core/imageContainerSlot'
 import { useRecentSearches } from './hooks/useRecentSearches'
 import { useSearch } from './hooks/useSearch'
 import { useViewPreference } from './hooks/useViewPreference'
+
+interface FlightState {
+  track: TrackResult
+  from: FlyRect
+  to: FlyRect
+}
 
 // Error announcements are handled by ErrorState's own role="alert" instead
 // of this region, so a failure isn't announced twice by assistive tech.
@@ -35,7 +43,13 @@ function App() {
   const recentSearches = useRecentSearches()
   const { viewMode, setViewMode } = useViewPreference()
 
+  // `selectedTrack` drives the results-list highlighting/thumbnail removal
+  // immediately on click. `displayedTrack` is what ImageContainer actually
+  // shows, and only updates once the flying clone lands - so the existing
+  // big image stays put, unmoving, until the new one visually arrives.
   const [selectedTrack, setSelectedTrack] = useState<TrackResult | null>(null)
+  const [displayedTrack, setDisplayedTrack] = useState<TrackResult | null>(null)
+  const [flight, setFlight] = useState<FlightState | null>(null)
 
   const handleLiveQuery = useCallback(
     (value: string) => {
@@ -63,8 +77,27 @@ function App() {
     [handleSubmit],
   )
 
-  const handleSelectResult = useCallback((track: TrackResult) => {
+  const handleSelectResult = useCallback((track: TrackResult, sourceRect: DOMRect | null) => {
     setSelectedTrack(track)
+
+    const targetRect = document.getElementById(IMAGE_CONTAINER_SLOT_ID)?.getBoundingClientRect() ?? null
+    if (!sourceRect || !targetRect) {
+      // No rects to animate between (shouldn't normally happen) - just swap instantly.
+      setFlight(null)
+      setDisplayedTrack(track)
+      return
+    }
+
+    setFlight({ track, from: sourceRect, to: targetRect })
+  }, [])
+
+  const handleFlightComplete = useCallback(() => {
+    setFlight((current) => {
+      if (current) {
+        setDisplayedTrack(current.track)
+      }
+      return null
+    })
   }, [])
 
   const { status, items, query, errorMessage, nextCursor, previousCursor } = search.state
@@ -77,53 +110,61 @@ function App() {
           <p>Search Mixcloud, pick a track, and play it right here.</p>
         </header>
 
-        <LayoutGroup>
-          <main className="app__layout">
-            <section className="app__panel app__search-panel" aria-labelledby="search-heading">
-              <h2 id="search-heading" className="visually-hidden">
-                Search
-              </h2>
-              <SearchBox value={inputValue} onChange={handleLiveQuery} onSubmit={handleSubmit} />
+        <main className="app__layout">
+          <section className="app__panel app__search-panel" aria-labelledby="search-heading">
+            <h2 id="search-heading" className="visually-hidden">
+              Search
+            </h2>
+            <SearchBox value={inputValue} onChange={handleLiveQuery} onSubmit={handleSubmit} />
 
-              <div aria-live="polite" className="visually-hidden">
-                {statusAnnouncement(status, query, items.length)}
-              </div>
-
-              <div className="app__results-region">
-                {status === 'error' && errorMessage && (
-                  <ErrorState message={errorMessage} onRetry={search.retry} />
-                )}
-                {status === 'loading' && items.length === 0 && <LoadingIndicator />}
-                {status === 'empty' && <EmptyState query={query} />}
-                {(status === 'success' || (status === 'loading' && items.length > 0)) && (
-                  <ResultsList
-                    items={items}
-                    viewMode={viewMode}
-                    selectedId={selectedTrack?.id ?? null}
-                    onSelect={handleSelectResult}
-                  />
-                )}
-              </div>
-
-              <PaginationControls
-                hasNext={nextCursor !== null}
-                hasPrevious={previousCursor !== null}
-                onNext={search.next}
-                onPrevious={search.previous}
-                viewMode={viewMode}
-                onSetViewMode={setViewMode}
-              />
-            </section>
-
-            <div className="app__panel">
-              <ImageContainer track={selectedTrack} />
+            <div aria-live="polite" className="visually-hidden">
+              {statusAnnouncement(status, query, items.length)}
             </div>
 
-            <div className="app__panel">
-              <RecentSearches history={recentSearches.history} onSelect={handleSelectRecent} />
+            <div className="app__results-region">
+              {status === 'error' && errorMessage && (
+                <ErrorState message={errorMessage} onRetry={search.retry} />
+              )}
+              {status === 'loading' && items.length === 0 && <LoadingIndicator />}
+              {status === 'empty' && <EmptyState query={query} />}
+              {(status === 'success' || (status === 'loading' && items.length > 0)) && (
+                <ResultsList
+                  items={items}
+                  viewMode={viewMode}
+                  selectedId={selectedTrack?.id ?? null}
+                  onSelect={handleSelectResult}
+                />
+              )}
             </div>
-          </main>
-        </LayoutGroup>
+
+            <PaginationControls
+              hasNext={nextCursor !== null}
+              hasPrevious={previousCursor !== null}
+              onNext={search.next}
+              onPrevious={search.previous}
+              viewMode={viewMode}
+              onSetViewMode={setViewMode}
+            />
+          </section>
+
+          <div className="app__panel">
+            <ImageContainer track={displayedTrack} />
+          </div>
+
+          <div className="app__panel">
+            <RecentSearches history={recentSearches.history} onSelect={handleSelectRecent} />
+          </div>
+        </main>
+
+        {flight && (
+          <FlyingImage
+            key={flight.track.id}
+            src={flight.track.imageUrl}
+            from={flight.from}
+            to={flight.to}
+            onComplete={handleFlightComplete}
+          />
+        )}
       </div>
     </MotionConfig>
   )

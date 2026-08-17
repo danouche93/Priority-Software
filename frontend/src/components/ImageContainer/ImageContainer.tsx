@@ -1,7 +1,6 @@
-import { AnimatePresence, motion } from 'framer-motion'
 import { useEffect, useRef, useState } from 'react'
 import type { TrackResult } from '../../api/types'
-import { trackImageLayoutId } from '../../core/layoutIds'
+import { IMAGE_CONTAINER_SLOT_ID } from '../../core/imageContainerSlot'
 import { loadMixcloudWidgetApi, type MixcloudPlayerWidget } from '../../core/mixcloudWidget'
 import './ImageContainer.css'
 
@@ -68,60 +67,43 @@ export function ImageContainer({ track }: ImageContainerProps) {
       <h2 id="image-container-heading" className="visually-hidden">
         Now viewing
       </h2>
-      <AnimatePresence mode="popLayout">
-        {track ? (
-          <motion.div
-            key={track.id}
-            className="image-container__content"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            <button
-              type="button"
-              ref={imageButtonRef}
-              className="image-container__image-button"
-              onClick={handleImageClick}
-              aria-label={`Play ${track.title} by ${track.ownerName}`}
-            >
-              <motion.img
-                layoutId={trackImageLayoutId(track.id)}
-                src={track.imageUrl}
-                alt=""
-                className="image-container__image"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ layout: { duration: 0.4, ease: 'easeInOut' }, opacity: { duration: 0.3 } }}
-              />
-            </button>
-            <p className="image-container__caption">
-              <span className="image-container__title">{track.title}</span>
-              <span className="image-container__owner">{track.ownerName}</span>
-            </p>
-            {isPlaying && (
-              <iframe
-                ref={iframeRef}
-                title={`${track.title} player`}
-                src={track.embedUrl}
-                className="image-container__embed"
-                allow="autoplay *;"
-              />
-            )}
-          </motion.div>
-        ) : (
-          <motion.p
-            key="placeholder"
-            className="image-container__placeholder"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            Select a search result to see it here.
-          </motion.p>
-        )}
-      </AnimatePresence>
+
+      {/* Always rendered (even with no track selected) at a stable position/
+          size, so FlyingImage always has a valid landing rect to measure -
+          including for the very first selection. The image itself never
+          animates; only the flying clone (rendered elsewhere, via a portal)
+          moves - this element just swaps its picture instantly once the
+          flight lands. */}
+      <button
+        type="button"
+        ref={imageButtonRef}
+        id={IMAGE_CONTAINER_SLOT_ID}
+        className="image-container__image-button"
+        onClick={handleImageClick}
+        disabled={!track}
+        aria-label={track ? `Play ${track.title} by ${track.ownerName}` : 'No track selected'}
+      >
+        {track && <img src={track.imageUrl} alt="" className="image-container__image" />}
+      </button>
+
+      {track ? (
+        <p className="image-container__caption">
+          <span className="image-container__title">{track.title}</span>
+          <span className="image-container__owner">{track.ownerName}</span>
+        </p>
+      ) : (
+        <p className="image-container__placeholder">Select a search result to see it here.</p>
+      )}
+
+      {isPlaying && track && (
+        <iframe
+          ref={iframeRef}
+          title={`${track.title} player`}
+          src={track.embedUrl}
+          className="image-container__embed"
+          allow="autoplay *;"
+        />
+      )}
     </section>
   )
 }

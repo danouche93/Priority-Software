@@ -1,40 +1,33 @@
-import { AnimatePresence, motion } from 'framer-motion'
+import { useRef } from 'react'
 import type { TrackResult } from '../../api/types'
-import { trackImageLayoutId } from '../../core/layoutIds'
 import type { ViewMode } from '../../core/viewPreference'
 
 export interface ResultItemProps {
   item: TrackResult
   viewMode: ViewMode
   isSelected: boolean
-  onSelect: (item: TrackResult) => void
+  onSelect: (item: TrackResult, sourceRect: DOMRect | null) => void
 }
 
 export function ResultItem({ item, viewMode, isSelected, onSelect }: ResultItemProps) {
+  const thumbSlotRef = useRef<HTMLSpanElement>(null)
+
+  const handleClick = () => {
+    onSelect(item, thumbSlotRef.current?.getBoundingClientRect() ?? null)
+  }
+
   return (
     <li className={`result-item result-item--${viewMode}`} role="listitem">
       <button
         type="button"
         className="result-item__button"
-        onClick={() => onSelect(item)}
+        onClick={handleClick}
         aria-current={isSelected ? 'true' : undefined}
       >
-        <span className="result-item__thumb-slot">
-          <AnimatePresence>
-            {!isSelected && (
-              <motion.img
-                layoutId={trackImageLayoutId(item.id)}
-                src={item.imageUrl}
-                alt=""
-                className="result-item__thumb"
-                loading="lazy"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ layout: { duration: 0.4, ease: 'easeInOut' }, opacity: { duration: 0.3 } }}
-              />
-            )}
-          </AnimatePresence>
+        <span className="result-item__thumb-slot" ref={thumbSlotRef}>
+          {!isSelected && (
+            <img src={item.imageUrl} alt="" className="result-item__thumb" loading="lazy" />
+          )}
         </span>
         <span className="result-item__meta">
           <span className="result-item__title">{item.title}</span>

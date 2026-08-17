@@ -7,7 +7,7 @@ export interface ResultsListProps {
   items: TrackResult[]
   viewMode: ViewMode
   selectedId: string | null
-  onSelect: (item: TrackResult) => void
+  onSelect: (item: TrackResult, sourceRect: DOMRect | null) => void
 }
 
 export function ResultsList({ items, viewMode, selectedId, onSelect }: ResultsListProps) {
