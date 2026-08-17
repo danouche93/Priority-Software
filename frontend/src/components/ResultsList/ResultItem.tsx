@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 import type { TrackResult } from '../../api/types'
 import { trackImageLayoutId } from '../../core/layoutIds'
 import type { ViewMode } from '../../core/viewPreference'
@@ -20,16 +20,21 @@ export function ResultItem({ item, viewMode, isSelected, onSelect }: ResultItemP
         aria-current={isSelected ? 'true' : undefined}
       >
         <span className="result-item__thumb-slot">
-          {!isSelected && (
-            <motion.img
-              layoutId={trackImageLayoutId(item.id)}
-              src={item.imageUrl}
-              alt=""
-              className="result-item__thumb"
-              loading="lazy"
-              transition={{ duration: 0.4, ease: 'easeInOut' }}
-            />
-          )}
+          <AnimatePresence>
+            {!isSelected && (
+              <motion.img
+                layoutId={trackImageLayoutId(item.id)}
+                src={item.imageUrl}
+                alt=""
+                className="result-item__thumb"
+                loading="lazy"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ layout: { duration: 0.4, ease: 'easeInOut' }, opacity: { duration: 0.3 } }}
+              />
+            )}
+          </AnimatePresence>
         </span>
         <span className="result-item__meta">
           <span className="result-item__title">{item.title}</span>

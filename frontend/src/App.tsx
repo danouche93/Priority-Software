@@ -36,7 +36,6 @@ function App() {
   const { viewMode, setViewMode } = useViewPreference()
 
   const [selectedTrack, setSelectedTrack] = useState<TrackResult | null>(null)
-  const [isPlaying, setIsPlaying] = useState(false)
 
   const handleLiveQuery = useCallback(
     (value: string) => {
@@ -66,11 +65,6 @@ function App() {
 
   const handleSelectResult = useCallback((track: TrackResult) => {
     setSelectedTrack(track)
-    setIsPlaying(false)
-  }, [])
-
-  const handlePlay = useCallback(() => {
-    setIsPlaying(true)
   }, [])
 
   const { status, items, query, errorMessage, nextCursor, previousCursor } = search.state
@@ -122,7 +116,7 @@ function App() {
             </section>
 
             <div className="app__panel">
-              <ImageContainer track={selectedTrack} isPlaying={isPlaying} onPlay={handlePlay} />
+              <ImageContainer track={selectedTrack} />
             </div>
 
             <div className="app__panel">
