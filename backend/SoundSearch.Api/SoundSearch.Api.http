@@ -1,0 +1,6 @@
+@SoundSearch.Api_HostAddress = http://localhost:5193
+
+GET {{SoundSearch.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
