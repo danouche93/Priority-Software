@@ -1,0 +1,40 @@
+.recent-searches h2 {
+  margin: 0 0 10px;
+  font-size: 15px;
+}
+
+.recent-searches ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.recent-searches button {
+  width: 100%;
+  padding: 8px 10px;
+  text-align: left;
+  font-size: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-h);
+  cursor: pointer;
+}
+
+.recent-searches button:hover {
+  background: var(--surface-hover);
+}
+
+.recent-searches button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.recent-searches__empty {
+  font-size: 13px;
+  color: var(--text);
+  margin: 0;
+}
