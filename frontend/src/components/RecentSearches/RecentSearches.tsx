@@ -12,9 +12,9 @@ export function RecentSearches({ history, onSelect }: RecentSearchesProps) {
       {history.length === 0 ? (
         <p className="recent-searches__empty">Your recent searches will show up here.</p>
       ) : (
-        <ul>
+        <ul role="list">
           {history.map((term) => (
-            <li key={term}>
+            <li key={term} role="listitem">
               <button type="button" onClick={() => onSelect(term)}>
                 {term}
               </button>

@@ -14,19 +14,14 @@ import { useRecentSearches } from './hooks/useRecentSearches'
 import { useSearch } from './hooks/useSearch'
 import { useViewPreference } from './hooks/useViewPreference'
 
-function statusAnnouncement(
-  status: string,
-  query: string,
-  resultCount: number,
-  errorMessage: string | null,
-): string {
+// Error announcements are handled by ErrorState's own role="alert" instead
+// of this region, so a failure isn't announced twice by assistive tech.
+function statusAnnouncement(status: string, query: string, resultCount: number): string {
   switch (status) {
     case 'loading':
       return 'Searching…'
     case 'empty':
       return `No results found for ${query}.`
-    case 'error':
-      return errorMessage ?? 'Something went wrong.'
     case 'success':
       return `${resultCount} result${resultCount === 1 ? '' : 's'} for ${query}.`
     default:
@@ -97,7 +92,7 @@ function App() {
               <SearchBox value={inputValue} onChange={handleLiveQuery} onSubmit={handleSubmit} />
 
               <div aria-live="polite" className="visually-hidden">
-                {statusAnnouncement(status, query, items.length, errorMessage)}
+                {statusAnnouncement(status, query, items.length)}
               </div>
 
               <div className="app__results-region">

@@ -12,7 +12,7 @@ export interface ResultItemProps {
 
 export function ResultItem({ item, viewMode, isSelected, onSelect }: ResultItemProps) {
   return (
-    <li className={`result-item result-item--${viewMode}`}>
+    <li className={`result-item result-item--${viewMode}`} role="listitem">
       <button
         type="button"
         className="result-item__button"

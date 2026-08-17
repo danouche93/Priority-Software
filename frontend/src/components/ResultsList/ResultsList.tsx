@@ -12,7 +12,7 @@ export interface ResultsListProps {
 
 export function ResultsList({ items, viewMode, selectedId, onSelect }: ResultsListProps) {
   return (
-    <ul className={`results-list results-list--${viewMode}`} aria-label="Search results">
+    <ul className={`results-list results-list--${viewMode}`} role="list" aria-label="Search results">
       {items.map((item) => (
         <ResultItem
           key={item.id}

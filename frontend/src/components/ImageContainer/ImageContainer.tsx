@@ -17,7 +17,7 @@ export function ImageContainer({ track, isPlaying, onPlay }: ImageContainerProps
     if (track) {
       imageButtonRef.current?.focus()
     }
-  }, [track?.id])
+  }, [track])
 
   return (
     <section className="image-container" aria-labelledby="image-container-heading">
