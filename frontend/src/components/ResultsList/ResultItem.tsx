@@ -1,4 +1,6 @@
+import { motion } from 'framer-motion'
 import type { TrackResult } from '../../api/types'
+import { trackImageLayoutId } from '../../core/layoutIds'
 import type { ViewMode } from '../../core/viewPreference'
 
 export interface ResultItemProps {
@@ -19,7 +21,14 @@ export function ResultItem({ item, viewMode, isSelected, onSelect }: ResultItemP
       >
         <span className="result-item__thumb-slot">
           {!isSelected && (
-            <img src={item.imageUrl} alt="" className="result-item__thumb" loading="lazy" />
+            <motion.img
+              layoutId={trackImageLayoutId(item.id)}
+              src={item.imageUrl}
+              alt=""
+              className="result-item__thumb"
+              loading="lazy"
+              transition={{ duration: 0.4, ease: 'easeInOut' }}
+            />
           )}
         </span>
         <span className="result-item__meta">
