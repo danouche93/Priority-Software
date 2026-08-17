@@ -12,15 +12,26 @@ import { EmptyState } from './components/StatusStates/EmptyState'
 import { ErrorState } from './components/StatusStates/ErrorState'
 import { LoadingIndicator } from './components/StatusStates/LoadingIndicator'
 import { IMAGE_CONTAINER_SLOT_ID } from './core/imageContainerSlot'
+import { findTrackThumbSlotRect } from './core/trackThumbSlot'
 import { useRecentSearches } from './hooks/useRecentSearches'
 import { useSearch } from './hooks/useSearch'
 import { useViewPreference } from './hooks/useViewPreference'
 
 interface FlightState {
-  track: TrackResult
+  key: string
+  src: string
   from: FlyRect
   to: FlyRect
+  fromRadius: string
+  toRadius: string
+  /** Only set for the newly-selected track's inbound flight. */
+  landsAs?: TrackResult
 }
+
+// Matches .result-item__thumb-slot's and the image container's border-radius
+// - both ends are circles, so the flying clone stays circular throughout.
+const THUMB_RADIUS = '50%'
+const CONTAINER_RADIUS = '50%'
 
 // Error announcements are handled by ErrorState's own role="alert" instead
 // of this region, so a failure isn't announced twice by assistive tech.
@@ -49,7 +60,7 @@ function App() {
   // big image stays put, unmoving, until the new one visually arrives.
   const [selectedTrack, setSelectedTrack] = useState<TrackResult | null>(null)
   const [displayedTrack, setDisplayedTrack] = useState<TrackResult | null>(null)
-  const [flight, setFlight] = useState<FlightState | null>(null)
+  const [flights, setFlights] = useState<FlightState[]>([])
 
   const handleLiveQuery = useCallback(
     (value: string) => {
@@ -77,27 +88,63 @@ function App() {
     [handleSubmit],
   )
 
-  const handleSelectResult = useCallback((track: TrackResult, sourceRect: DOMRect | null) => {
-    setSelectedTrack(track)
+  const handleSelectResult = useCallback(
+    (track: TrackResult, sourceRect: DOMRect | null) => {
+      if (track.id === displayedTrack?.id) return
+      setSelectedTrack(track)
 
-    const targetRect = document.getElementById(IMAGE_CONTAINER_SLOT_ID)?.getBoundingClientRect() ?? null
-    if (!sourceRect || !targetRect) {
-      // No rects to animate between (shouldn't normally happen) - just swap instantly.
-      setFlight(null)
-      setDisplayedTrack(track)
-      return
-    }
+      const containerRect = document.getElementById(IMAGE_CONTAINER_SLOT_ID)?.getBoundingClientRect() ?? null
 
-    setFlight({ track, from: sourceRect, to: targetRect })
-  }, [])
-
-  const handleFlightComplete = useCallback(() => {
-    setFlight((current) => {
-      if (current) {
-        setDisplayedTrack(current.track)
+      // Send the currently displayed image (if any) flying back to its own
+      // spot in the results list, as long as it's still shown there.
+      if (displayedTrack && containerRect) {
+        const returnRect = findTrackThumbSlotRect(displayedTrack.id)
+        if (returnRect) {
+          setFlights((prev) => [
+            ...prev,
+            {
+              key: `out-${displayedTrack.id}-${Date.now()}`,
+              src: displayedTrack.imageUrl,
+              from: containerRect,
+              to: returnRect,
+              fromRadius: CONTAINER_RADIUS,
+              toRadius: THUMB_RADIUS,
+            },
+          ])
+          // The real image is now "in flight" back to the list - clear it
+          // from the container immediately, otherwise it'd still sit there
+          // unmoving while its flying clone leaves from the same spot,
+          // looking like a duplicate.
+          setDisplayedTrack(null)
+        }
       }
-      return null
-    })
+
+      if (sourceRect && containerRect) {
+        setFlights((prev) => [
+          ...prev,
+          {
+            key: `in-${track.id}-${Date.now()}`,
+            src: track.imageUrl,
+            from: sourceRect,
+            to: containerRect,
+            fromRadius: THUMB_RADIUS,
+            toRadius: CONTAINER_RADIUS,
+            landsAs: track,
+          },
+        ])
+      } else {
+        // No rects to animate between (shouldn't normally happen) - just swap instantly.
+        setDisplayedTrack(track)
+      }
+    },
+    [displayedTrack],
+  )
+
+  const handleFlightComplete = useCallback((flightKey: string, landsAs: TrackResult | undefined) => {
+    setFlights((prev) => prev.filter((flight) => flight.key !== flightKey))
+    if (landsAs) {
+      setDisplayedTrack(landsAs)
+    }
   }, [])
 
   const { status, items, query, errorMessage, nextCursor, previousCursor } = search.state
@@ -156,15 +203,17 @@ function App() {
           </div>
         </main>
 
-        {flight && (
+        {flights.map((flight) => (
           <FlyingImage
-            key={flight.track.id}
-            src={flight.track.imageUrl}
+            key={flight.key}
+            src={flight.src}
             from={flight.from}
             to={flight.to}
-            onComplete={handleFlightComplete}
+            fromRadius={flight.fromRadius}
+            toRadius={flight.toRadius}
+            onComplete={() => handleFlightComplete(flight.key, flight.landsAs)}
           />
-        )}
+        ))}
       </div>
     </MotionConfig>
   )

@@ -12,6 +12,10 @@ export interface FlyingImageProps {
   src: string
   from: FlyRect
   to: FlyRect
+  /** CSS border-radius at the start/end of the flight, e.g. the list
+   * thumbnail's rounded square vs. the container's full circle. */
+  fromRadius?: string
+  toRadius?: string
   onComplete: () => void
 }
 
@@ -22,21 +26,26 @@ export interface FlyingImageProps {
 // behind other elements' stacking contexts, which is what made the previous
 // in-place `layoutId` shared-element animation look like it only moved
 // inside its own little box.
-export function FlyingImage({ src, from, to, onComplete }: FlyingImageProps) {
+export function FlyingImage({ src, from, to, fromRadius = '10px', toRadius = '10px', onComplete }: FlyingImageProps) {
   return createPortal(
     <motion.img
       src={src}
       alt=""
       aria-hidden="true"
-      initial={{ top: from.top, left: from.left, width: from.width, height: from.height }}
-      animate={{ top: to.top, left: to.left, width: to.width, height: to.height }}
+      initial={{
+        top: from.top,
+        left: from.left,
+        width: from.width,
+        height: from.height,
+        borderRadius: fromRadius,
+      }}
+      animate={{ top: to.top, left: to.left, width: to.width, height: to.height, borderRadius: toRadius }}
       transition={{ duration: 0.45, ease: 'easeInOut' }}
       onAnimationComplete={onComplete}
       style={{
         position: 'fixed',
         margin: 0,
         objectFit: 'cover',
-        borderRadius: 10,
         zIndex: 1000,
         pointerEvents: 'none',
       }}

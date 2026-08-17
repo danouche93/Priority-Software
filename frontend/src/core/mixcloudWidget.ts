@@ -2,11 +2,20 @@
 // https://www.mixcloud.com/developers/widget/
 const WIDGET_SCRIPT_URL = 'https://widget.mixcloud.com/media/js/widgetApi.js'
 
+export interface MixcloudWidgetEvent {
+  on: (callback: () => void) => void
+}
+
 export interface MixcloudPlayerWidget {
   ready: Promise<void>
   play: () => Promise<void>
   pause: () => Promise<void>
   togglePlay: () => Promise<void>
+  events: {
+    play: MixcloudWidgetEvent
+    pause: MixcloudWidgetEvent
+    ended: MixcloudWidgetEvent
+  }
 }
 
 export interface MixcloudGlobal {

@@ -24,7 +24,7 @@ export function ResultItem({ item, viewMode, isSelected, onSelect }: ResultItemP
         onClick={handleClick}
         aria-current={isSelected ? 'true' : undefined}
       >
-        <span className="result-item__thumb-slot" ref={thumbSlotRef}>
+        <span className="result-item__thumb-slot" ref={thumbSlotRef} data-track-thumb-id={item.id}>
           {!isSelected && (
             <img src={item.imageUrl} alt="" className="result-item__thumb" loading="lazy" />
           )}

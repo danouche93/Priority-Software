@@ -61,7 +61,7 @@
   flex: none;
   width: 44px;
   height: 44px;
-  border-radius: 6px;
+  border-radius: 50%;
   overflow: hidden;
   background: var(--surface-hover);
 }

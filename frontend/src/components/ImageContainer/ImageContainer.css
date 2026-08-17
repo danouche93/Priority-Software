@@ -12,12 +12,13 @@
   border: none;
   background: var(--surface-hover);
   cursor: pointer;
-  border-radius: 10px;
+  border-radius: 50%;
   overflow: hidden;
   width: 100%;
   max-width: 260px;
   aspect-ratio: 1 / 1;
   margin: 0 0 10px;
+  box-shadow: 0 4px 16px rgb(0 0 0 / 0.25);
 }
 
 .image-container__image-button:disabled {
@@ -35,10 +36,34 @@
   object-fit: cover;
   display: block;
   transition: transform 0.2s ease;
+  /* Always attached (rather than added/removed with the --spinning class) so
+     that toggling animation-play-state below pauses it in place instead of
+     snapping back to the 0deg starting frame. */
+  animation: image-container-spin 6s linear infinite;
+  animation-play-state: paused;
 }
 
 .image-container__image-button:hover .image-container__image {
   transform: scale(1.03);
+}
+
+.image-container__image--spinning {
+  animation-play-state: running;
+}
+
+@keyframes image-container-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .image-container__image {
+    animation: none;
+  }
 }
 
 .image-container__caption {

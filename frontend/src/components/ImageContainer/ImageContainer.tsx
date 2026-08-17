@@ -13,6 +13,10 @@ export function ImageContainer({ track }: ImageContainerProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const widgetRef = useRef<MixcloudPlayerWidget | null>(null)
   const [isPlaying, setIsPlaying] = useState(false)
+  // Reflects the widget's actual play/pause state (as reported by its
+  // events), which is what drives the spinning-disk animation - `isPlaying`
+  // above only tracks whether the iframe/widget has been mounted at all.
+  const [isSpinning, setIsSpinning] = useState(false)
 
   useEffect(() => {
     if (track) {
@@ -23,6 +27,7 @@ export function ImageContainer({ track }: ImageContainerProps) {
   // Hide the embed again whenever a different track is selected.
   useEffect(() => {
     setIsPlaying(false)
+    setIsSpinning(false)
     widgetRef.current = null
   }, [track?.id])
 
@@ -40,6 +45,9 @@ export function ImageContainer({ track }: ImageContainerProps) {
         return widget.ready.then(() => {
           if (cancelled) return
           widgetRef.current = widget
+          widget.events.play.on(() => setIsSpinning(true))
+          widget.events.pause.on(() => setIsSpinning(false))
+          widget.events.ended.on(() => setIsSpinning(false))
           return widget.play()
         })
       })
@@ -83,7 +91,13 @@ export function ImageContainer({ track }: ImageContainerProps) {
         disabled={!track}
         aria-label={track ? `Play ${track.title} by ${track.ownerName}` : 'No track selected'}
       >
-        {track && <img src={track.imageUrl} alt="" className="image-container__image" />}
+        {track && (
+          <img
+            src={track.imageUrl}
+            alt=""
+            className={`image-container__image${isSpinning ? ' image-container__image--spinning' : ''}`}
+          />
+        )}
       </button>
 
       {track ? (
