@@ -40,8 +40,10 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors(FrontendCorsPolicy);
 app.UseAuthorization();
+app.UseStaticFiles();
 app.MapControllers();
 app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
+app.MapFallbackToFile("index.html");
 
 app.Run();
 

@@ -1,7 +1,7 @@
 import { ApiError, type SearchResponse, type TrackResult } from "./types";
 
 const API_BASE_URL: string =
-  import.meta.env.VITE_API_BASE_URL ?? "http://localhost:5193";
+  import.meta.env.VITE_API_BASE_URL ?? window.location.origin;
 const SEARCH_ENDPOINT = "/api/search";
 
 export interface SearchByTermParams {

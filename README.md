@@ -1,15 +1,15 @@
 # Sound Search
 
-**Live app:** _TODO - add the website link here after it is deployed (see [Deployment](#deployment))._
-**Live API:** _TODO - add the backend link here._
+**Live app:** _TODO - add the link here after it is deployed (see [Deployment](#deployment))._
 
 Search for tracks on Mixcloud, look through the results 6 at a time, and click
 one to play it in the middle of the page. It also remembers your last 5
 searches for next time.
 
-The website is built with React and TypeScript. It talks to a small backend
-built with ASP.NET Core, which in turn talks to the
-[Mixcloud API](https://www.mixcloud.com/developers/).
+The website is built with React and TypeScript. A small ASP.NET Core backend
+serves that website and also talks to the
+[Mixcloud API](https://www.mixcloud.com/developers/) for it - so it's really
+just one app to run or deploy.
 
 ## Project layout
 
@@ -24,8 +24,9 @@ built with ASP.NET Core, which in turn talks to the
 │       ├── core/                   plain logic, no React, has tests
 │       ├── hooks/                  connects core/ to React
 │       └── components/             the UI pieces
-├── backend/Dockerfile              used to build the API for hosting
-└── render.yaml                     settings for hosting the API on Render
+├── backend/Dockerfile              builds the website, then packages it
+│                                    together with the API into one image
+└── render.yaml                     settings for hosting on Render
 ```
 
 The website never talks to Mixcloud directly, only to our own backend.
@@ -51,15 +52,17 @@ One address to call: `GET /api/search?q={term}` to start a new search, or
 ### Frontend (`/frontend`)
 
 - `src/core/` - plain logic with no React in it: waiting before searching
-  while typing, remembering recent searches, and the part that manages
-  search requests (see below).
-- `src/hooks/` - connects that logic to React.
+  while typing, remembering recent searches.
+- `src/hooks/useSearch.ts` - runs the actual search, using
+  [TanStack Query](https://tanstack.com/query) to call the backend.
 - `src/components/` - the search box, the results list, the player box,
   pagination buttons, recent searches, and the loading/empty/error messages.
 
-The `SearchController` keeps search results correct even if you type fast or
-click Next/Previous quickly: every new search cancels the one before it, and
-an old, slow answer can never overwrite a newer one.
+Search results are cached: going back to a page you already saw (or
+re-running a search you already ran) shows it instantly instead of asking
+the backend again. Typing fast or clicking Next/Previous quickly also stays
+correct - an old, slow answer can never overwrite a newer one, since each
+search/page has its own place in the cache instead of one shared spot.
 
 The "flying image" effect: when you click a result, we note where its small
 picture is on screen, make a copy of it, and animate that copy across the
@@ -71,6 +74,9 @@ container's edges along the way.
 
 You'll need [.NET SDK 9](https://dotnet.microsoft.com/download) and
 [Node 20 or newer](https://nodejs.org/).
+
+While you're working on the code, it's easiest to run the two parts
+separately, so the website reloads instantly as you edit it:
 
 ```bash
 cd backend
@@ -87,6 +93,16 @@ cp .env.example .env.local   # already points at http://localhost:5080
 npm run dev
 ```
 
+To try it the way it runs in production, as one single app, build the
+Docker image from the repo root instead:
+
+```bash
+docker build -f backend/Dockerfile -t soundsearch .
+docker run -p 8080:8080 -e PORT=8080 soundsearch
+```
+
+Then open `http://localhost:8080`.
+
 ## Testing
 
 ```bash
@@ -96,23 +112,14 @@ cd frontend && npm test
 
 ## Deployment
 
-### Backend → Render
+Only one thing to deploy - the backend, which also serves the website.
 
 1. On [Render](https://render.com), choose **New → Blueprint** and point it
    at this repo. It will find `render.yaml` and build `backend/Dockerfile`
-   for you.
-2. Once it's live, copy the URL Render gives you.
-3. After you also have the Vercel URL (next step), set it as the
-   `AllowedOrigin` variable on the Render service and redeploy.
-
-### Frontend → Vercel
-
-1. On [Vercel](https://vercel.com), choose **Add New → Project**, import this
-   repo, and set **Root Directory** to `frontend`.
-2. Add an environment variable `VITE_API_BASE_URL` with your Render URL from
-   above.
-3. Deploy. Then put the resulting Vercel URL into Render's `AllowedOrigin`
-   setting, and also into this README at the top.
+   for you (this builds the website too, and packages it into the same
+   image).
+2. Once it's live, open the URL Render gives you - that's the whole app.
+3. Put that URL into this README at the top.
 
 ## A few notes on why things are built this way
 

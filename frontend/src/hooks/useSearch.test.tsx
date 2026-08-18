@@ -1,4 +1,6 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { act, renderHook, waitFor } from '@testing-library/react'
+import type { ReactNode } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import * as searchApi from '../api/searchApi'
 import type { SearchResponse } from '../api/types'
@@ -13,6 +15,14 @@ function makeResponse(overrides: Partial<SearchResponse> = {}): SearchResponse {
   return { items: [], nextCursor: null, previousCursor: null, ...overrides }
 }
 
+function renderUseSearch() {
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  function wrapper({ children }: { children: ReactNode }) {
+    return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+  }
+  return renderHook(() => useSearch(), { wrapper })
+}
+
 describe('useSearch', () => {
   beforeEach(() => {
     vi.mocked(searchApi.searchByTerm).mockReset()
@@ -20,7 +30,7 @@ describe('useSearch', () => {
   })
 
   it('starts idle and does not call the API until a query is provided', () => {
-    const { result } = renderHook(() => useSearch())
+    const { result } = renderUseSearch()
     expect(result.current.state.status).toBe('idle')
     expect(searchApi.searchByTerm).not.toHaveBeenCalled()
   })
@@ -29,7 +39,7 @@ describe('useSearch', () => {
     vi.useFakeTimers()
     try {
       vi.mocked(searchApi.searchByTerm).mockResolvedValue(makeResponse())
-      const { result } = renderHook(() => useSearch())
+      const { result } = renderUseSearch()
 
       act(() => {
         result.current.liveQuery('ad')
@@ -55,7 +65,7 @@ describe('useSearch', () => {
 
   it('submit() searches immediately, bypassing the debounce', async () => {
     vi.mocked(searchApi.searchByTerm).mockResolvedValue(makeResponse({ items: [] }))
-    const { result } = renderHook(() => useSearch())
+    const { result } = renderUseSearch()
 
     await act(async () => {
       result.current.submit('adele')
@@ -66,7 +76,7 @@ describe('useSearch', () => {
 
   it('moves to the empty status when a search returns no results', async () => {
     vi.mocked(searchApi.searchByTerm).mockResolvedValue(makeResponse({ items: [] }))
-    const { result } = renderHook(() => useSearch())
+    const { result } = renderUseSearch()
 
     await act(async () => {
       result.current.submit('nonexistent')
@@ -77,7 +87,7 @@ describe('useSearch', () => {
 
   it('moves to the error status and exposes a message on failure, then retry() replays the last action', async () => {
     vi.mocked(searchApi.searchByTerm).mockRejectedValueOnce(new Error('boom'))
-    const { result } = renderHook(() => useSearch())
+    const { result } = renderUseSearch()
 
     await act(async () => {
       result.current.submit('adele')
@@ -97,7 +107,7 @@ describe('useSearch', () => {
 
   it('clearing the query (liveQuery("")) resets state without calling the API', async () => {
     vi.mocked(searchApi.searchByTerm).mockResolvedValue(makeResponse({ items: [] }))
-    const { result } = renderHook(() => useSearch())
+    const { result } = renderUseSearch()
 
     await act(async () => {
       result.current.submit('adele')
@@ -113,7 +123,7 @@ describe('useSearch', () => {
   })
 
   it('does nothing when next()/previous() are called with no cursor available', () => {
-    const { result } = renderHook(() => useSearch())
+    const { result } = renderUseSearch()
 
     act(() => {
       result.current.next()
@@ -122,5 +132,30 @@ describe('useSearch', () => {
 
     expect(searchApi.searchByCursor).not.toHaveBeenCalled()
     expect(result.current.state.status).toBe('idle')
+  })
+
+  it('caches a page so revisiting it does not refetch', async () => {
+    vi.mocked(searchApi.searchByTerm).mockResolvedValue(
+      makeResponse({ items: [], nextCursor: 'page-2' }),
+    )
+    vi.mocked(searchApi.searchByCursor).mockResolvedValue(makeResponse({ previousCursor: 'page-1' }))
+    const { result } = renderUseSearch()
+
+    await act(async () => {
+      result.current.submit('adele')
+    })
+    await waitFor(() => expect(result.current.state.status).toBe('empty'))
+
+    await act(async () => {
+      result.current.next()
+    })
+    await waitFor(() => expect(searchApi.searchByCursor).toHaveBeenCalledTimes(1))
+
+    await act(async () => {
+      result.current.previous()
+    })
+
+    await waitFor(() => expect(result.current.state.status).toBe('empty'))
+    expect(searchApi.searchByTerm).toHaveBeenCalledTimes(1)
   })
 })

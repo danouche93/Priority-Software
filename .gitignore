@@ -15,6 +15,7 @@ yarn-error.log*
 backend/**/bin/
 backend/**/obj/
 backend/**/*.user
+backend/SoundSearch.Api/wwwroot/
 .vs/
 
 # --- Editor / OS ---

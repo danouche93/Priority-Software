@@ -1,0 +1,10 @@
+**/bin/
+**/obj/
+**/*.user
+backend/SoundSearch.Api.Tests/
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+frontend/.env.*
+!frontend/.env.example
+.git/
