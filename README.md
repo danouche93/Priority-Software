@@ -110,17 +110,6 @@ cd backend && dotnet test
 cd frontend && npm test
 ```
 
-## Deployment
-
-Only one thing to deploy - the backend, which also serves the website.
-
-1. On [Render](https://render.com), choose **New → Blueprint** and point it
-   at this repo. It will find `render.yaml` and build `backend/Dockerfile`
-   for you (this builds the website too, and packages it into the same
-   image).
-2. Once it's live, open the URL Render gives you - that's the whole app.
-3. Put that URL into this README at the top.
-
 ## A few notes on why things are built this way
 
 - The backend mainly exists so all the Mixcloud-specific details stay in one
