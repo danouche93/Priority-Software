@@ -21,4 +21,11 @@ COPY --from=frontend-build /src/dist ./wwwroot
 
 # Render (and most PaaS hosts) inject $PORT at runtime; Program.cs binds to
 # it directly, so no fixed port is declared here.
+
+# Without this, ASP.NET Core tries to watch appsettings.json for changes
+# using inotify, which fails and crashes the app on Render's free-tier
+# containers (low inotify instance limit). Config never changes at runtime
+# in a container anyway, so this is safe to disable.
+ENV DOTNET_hostBuilder__reloadConfigOnChange=false
+
 ENTRYPOINT ["dotnet", "SoundSearch.Api.dll"]
