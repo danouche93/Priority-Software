@@ -24,17 +24,12 @@ interface FlightState {
   to: FlyRect
   fromRadius: string
   toRadius: string
-  /** Only set for the newly-selected track's inbound flight. */
   landsAs?: TrackResult
 }
 
-// Matches .result-item__thumb-slot's and the image container's border-radius
-// - both ends are circles, so the flying clone stays circular throughout.
 const THUMB_RADIUS = '50%'
 const CONTAINER_RADIUS = '50%'
 
-// Error announcements are handled by ErrorState's own role="alert" instead
-// of this region, so a failure isn't announced twice by assistive tech.
 function statusAnnouncement(status: string, query: string, resultCount: number): string {
   switch (status) {
     case 'loading':
@@ -54,10 +49,6 @@ function App() {
   const recentSearches = useRecentSearches()
   const { viewMode, setViewMode } = useViewPreference()
 
-  // `selectedTrack` drives the results-list highlighting/thumbnail removal
-  // immediately on click. `displayedTrack` is what ImageContainer actually
-  // shows, and only updates once the flying clone lands - so the existing
-  // big image stays put, unmoving, until the new one visually arrives.
   const [selectedTrack, setSelectedTrack] = useState<TrackResult | null>(null)
   const [displayedTrack, setDisplayedTrack] = useState<TrackResult | null>(null)
   const [flights, setFlights] = useState<FlightState[]>([])
@@ -95,8 +86,6 @@ function App() {
 
       const containerRect = document.getElementById(IMAGE_CONTAINER_SLOT_ID)?.getBoundingClientRect() ?? null
 
-      // Send the currently displayed image (if any) flying back to its own
-      // spot in the results list, as long as it's still shown there.
       if (displayedTrack && containerRect) {
         const returnRect = findTrackThumbSlotRect(displayedTrack.id)
         if (returnRect) {
@@ -111,10 +100,6 @@ function App() {
               toRadius: THUMB_RADIUS,
             },
           ])
-          // The real image is now "in flight" back to the list - clear it
-          // from the container immediately, otherwise it'd still sit there
-          // unmoving while its flying clone leaves from the same spot,
-          // looking like a duplicate.
           setDisplayedTrack(null)
         }
       }
@@ -133,7 +118,6 @@ function App() {
           },
         ])
       } else {
-        // No rects to animate between (shouldn't normally happen) - just swap instantly.
         setDisplayedTrack(track)
       }
     },

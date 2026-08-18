@@ -13,9 +13,6 @@ export function ImageContainer({ track }: ImageContainerProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const widgetRef = useRef<MixcloudPlayerWidget | null>(null)
   const [isPlaying, setIsPlaying] = useState(false)
-  // Reflects the widget's actual play/pause state (as reported by its
-  // events), which is what drives the spinning-disk animation - `isPlaying`
-  // above only tracks whether the iframe/widget has been mounted at all.
   const [isSpinning, setIsSpinning] = useState(false)
 
   useEffect(() => {
@@ -24,15 +21,12 @@ export function ImageContainer({ track }: ImageContainerProps) {
     }
   }, [track])
 
-  // Hide the embed again whenever a different track is selected.
   useEffect(() => {
     setIsPlaying(false)
     setIsSpinning(false)
     widgetRef.current = null
   }, [track?.id])
 
-  // Once the iframe is mounted (after the user clicks to play), set up the
-  // widget and start playback as soon as it's ready.
   useEffect(() => {
     if (!isPlaying || !track) return
 
@@ -76,12 +70,6 @@ export function ImageContainer({ track }: ImageContainerProps) {
         Now viewing
       </h2>
 
-      {/* Always rendered (even with no track selected) at a stable position/
-          size, so FlyingImage always has a valid landing rect to measure -
-          including for the very first selection. The image itself never
-          animates; only the flying clone (rendered elsewhere, via a portal)
-          moves - this element just swaps its picture instantly once the
-          flight lands. */}
       <button
         type="button"
         ref={imageButtonRef}

@@ -12,11 +12,7 @@ public sealed class SearchController(IMusicSearchProvider provider, ILogger<Sear
     private const int DefaultLimit = 6;
     private const int MaxLimit = 6;
 
-    /// <summary>
-    /// GET /api/search?q=term            -> new search, first page.
-    /// GET /api/search?cursor=opaqueToken -> next/previous page of a search
-    ///                                       already in progress.
-    /// </summary>
+    // q=term for a new search, cursor=token for the next/previous page
     [HttpGet]
     public async Task<ActionResult<SearchResponseDto>> Get(
         [FromQuery] string? q,
@@ -49,7 +45,7 @@ public sealed class SearchController(IMusicSearchProvider provider, ILogger<Sear
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
-            // Client navigated away / aborted the request; nothing to report.
+            // client aborted, nothing to report
             return new StatusCodeResult(499);
         }
         catch (Exception ex)

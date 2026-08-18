@@ -1,4 +1,3 @@
-// Loads the Mixcloud Widget API script once and resolves with window.Mixcloud.
 // https://www.mixcloud.com/developers/widget/
 const WIDGET_SCRIPT_URL = 'https://widget.mixcloud.com/media/js/widgetApi.js'
 

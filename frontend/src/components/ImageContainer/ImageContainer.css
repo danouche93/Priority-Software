@@ -36,9 +36,6 @@
   object-fit: cover;
   display: block;
   transition: transform 0.2s ease;
-  /* Always attached (rather than added/removed with the --spinning class) so
-     that toggling animation-play-state below pauses it in place instead of
-     snapping back to the 0deg starting frame. */
   animation: image-container-spin 6s linear infinite;
   animation-play-state: paused;
 }

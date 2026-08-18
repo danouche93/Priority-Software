@@ -27,8 +27,6 @@ function defer<T>(): Deferred<T> {
   return { promise, resolve, reject }
 }
 
-/** A SearchClient whose responses are resolved manually, so tests can
- * control the exact order in which requests settle. */
 function createControllableClient() {
   const termDeferreds: Deferred<SearchResponse>[] = []
   const cursorDeferreds: Deferred<SearchResponse>[] = []
@@ -85,8 +83,6 @@ describe('SearchController', () => {
     const first = controller.searchTerm('a')
     const second = controller.searchTerm('b')
 
-    // Resolve the *first* (now-stale) request after the second has already
-    // started - this is the "rapid typing/clicking" race.
     termDeferreds[0].resolve(makeResponse({ nextCursor: 'from-a' }))
     termDeferreds[1].resolve(makeResponse({ nextCursor: 'from-b' }))
     await Promise.all([first, second])

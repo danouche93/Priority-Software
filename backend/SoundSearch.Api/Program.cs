@@ -2,7 +2,7 @@ using SoundSearch.Api.Providers;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Render (and most PaaS hosts) tell the app which port to bind to via $PORT.
+// Render sets $PORT for the app to bind to
 var port = Environment.GetEnvironmentVariable("PORT");
 if (!string.IsNullOrWhiteSpace(port))
 {
@@ -12,9 +12,6 @@ if (!string.IsNullOrWhiteSpace(port))
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
-// The data-source seam: swap MixcloudSearchProvider for another
-// IMusicSearchProvider implementation to point the app at a different
-// Sound API without touching controllers, DTOs, or the frontend.
 builder.Services.AddHttpClient<IMusicSearchProvider, MixcloudSearchProvider>(client =>
 {
     client.Timeout = TimeSpan.FromSeconds(10);
@@ -48,5 +45,5 @@ app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 
 app.Run();
 
-// Exposed so WebApplicationFactory<Program> can be used from integration tests.
+// for WebApplicationFactory<Program> in tests
 public partial class Program;

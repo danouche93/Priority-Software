@@ -67,9 +67,7 @@ const DEBOUNCE_MS = 300
 
 export interface UseSearchResult {
   state: SearchState
-  /** Called on every keystroke; debounced ~300ms before actually searching. */
   liveQuery: (value: string) => void
-  /** Called on explicit submit (Enter / Go button / recent-search click); searches immediately. */
   submit: (value: string) => void
   next: () => void
   previous: () => void

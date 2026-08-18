@@ -2,9 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace SoundSearch.Api.Providers;
 
-// Raw shapes returned by the Mixcloud search API (https://api.mixcloud.com/search/).
-// These are internal on purpose: nothing outside this file/provider should
-// ever depend on Mixcloud's JSON layout.
+// raw shapes from https://api.mixcloud.com/search/
 
 internal sealed record MixcloudSearchResponse(
     [property: JsonPropertyName("data")] List<MixcloudCloudcast>? Data,

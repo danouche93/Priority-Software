@@ -29,15 +29,6 @@ function describeError(error: unknown): string {
   return 'Unexpected error. Please try again.'
 }
 
-/**
- * Owns every rule needed for "correct async handling": each call to
- * `searchTerm`/`goToCursor` aborts whatever request came before it and is
- * tagged with a monotonically increasing request id. A response is only
- * ever applied if it's still the most recent request in flight - so typing
- * quickly, or mashing Next/Previous, can never let a stale response
- * clobber newer results. This class has no React/DOM dependency beyond
- * `AbortController`, so it is unit-testable in isolation from any UI.
- */
 export class SearchController {
   private readonly client: SearchClient
   private readonly callbacks: SearchControllerCallbacks
@@ -71,7 +62,6 @@ export class SearchController {
     }
   }
 
-  /** Aborts any in-flight request. Call on unmount. */
   dispose(): void {
     this.abortController?.abort()
   }

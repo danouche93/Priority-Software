@@ -3,11 +3,6 @@ using SoundSearch.Api.Models;
 
 namespace SoundSearch.Api.Providers;
 
-/// <summary>
-/// <see cref="IMusicSearchProvider"/> backed by the public Mixcloud search
-/// API. This is the only class in the whole backend that knows Mixcloud's
-/// URL shapes, JSON layout, and pagination scheme.
-/// </summary>
 public sealed class MixcloudSearchProvider(HttpClient httpClient) : IMusicSearchProvider
 {
     private const string ApiHost = "api.mixcloud.com";

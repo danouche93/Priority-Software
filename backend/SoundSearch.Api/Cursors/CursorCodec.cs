@@ -2,12 +2,6 @@ using System.Text;
 
 namespace SoundSearch.Api.Cursors;
 
-/// <summary>
-/// Turns a provider's raw paging URL into an opaque token safe to hand to
-/// the client, and back again. This is what lets the API use the provider's
-/// own paging cursor (Mixcloud's <c>paging.next</c>/<c>previous</c> URLs)
-/// instead of the client (or us) guessing/recomputing an offset.
-/// </summary>
 public static class CursorCodec
 {
     public static string Encode(string providerUrl)
