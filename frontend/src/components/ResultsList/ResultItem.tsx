@@ -6,10 +6,11 @@ export interface ResultItemProps {
   item: TrackResult
   viewMode: ViewMode
   isSelected: boolean
+  isThumbHidden: boolean
   onSelect: (item: TrackResult, sourceRect: DOMRect | null) => void
 }
 
-export function ResultItem({ item, viewMode, isSelected, onSelect }: ResultItemProps) {
+export function ResultItem({ item, viewMode, isSelected, isThumbHidden, onSelect }: ResultItemProps) {
   const thumbSlotRef = useRef<HTMLSpanElement>(null)
 
   const handleClick = () => {
@@ -25,7 +26,7 @@ export function ResultItem({ item, viewMode, isSelected, onSelect }: ResultItemP
         aria-current={isSelected ? 'true' : undefined}
       >
         <span className="result-item__thumb-slot" ref={thumbSlotRef} data-track-thumb-id={item.id}>
-          {!isSelected && (
+          {!isThumbHidden && (
             <img src={item.imageUrl} alt="" className="result-item__thumb" loading="lazy" />
           )}
         </span>

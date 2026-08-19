@@ -1,5 +1,5 @@
 import { MotionConfig } from 'framer-motion'
-import { useCallback, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import './App.css'
 import type { TrackResult } from './api/types'
 import { FlyingImage, type FlyRect } from './components/FlyingImage/FlyingImage'
@@ -25,6 +25,7 @@ interface FlightState {
   fromRadius: string
   toRadius: string
   landsAs?: TrackResult
+  returnsToId?: string
 }
 
 const THUMB_RADIUS = '50%'
@@ -98,6 +99,7 @@ function App() {
               to: returnRect,
               fromRadius: CONTAINER_RADIUS,
               toRadius: THUMB_RADIUS,
+              returnsToId: displayedTrack.id,
             },
           ])
           setDisplayedTrack(null)
@@ -133,6 +135,15 @@ function App() {
 
   const { status, items, query, errorMessage, nextCursor, previousCursor } = search.state
 
+  const hiddenThumbIds = useMemo(() => {
+    const ids = new Set<string>()
+    if (selectedTrack) ids.add(selectedTrack.id)
+    for (const flight of flights) {
+      if (flight.returnsToId) ids.add(flight.returnsToId)
+    }
+    return ids
+  }, [selectedTrack, flights])
+
   return (
     <MotionConfig reducedMotion="user">
       <div className="app">
@@ -163,6 +174,7 @@ function App() {
                   items={items}
                   viewMode={viewMode}
                   selectedId={selectedTrack?.id ?? null}
+                  hiddenThumbIds={hiddenThumbIds}
                   onSelect={handleSelectResult}
                 />
               )}

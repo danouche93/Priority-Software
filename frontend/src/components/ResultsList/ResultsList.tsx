@@ -7,10 +7,11 @@ export interface ResultsListProps {
   items: TrackResult[]
   viewMode: ViewMode
   selectedId: string | null
+  hiddenThumbIds: ReadonlySet<string>
   onSelect: (item: TrackResult, sourceRect: DOMRect | null) => void
 }
 
-export function ResultsList({ items, viewMode, selectedId, onSelect }: ResultsListProps) {
+export function ResultsList({ items, viewMode, selectedId, hiddenThumbIds, onSelect }: ResultsListProps) {
   return (
     <ul className={`results-list results-list--${viewMode}`} role="list" aria-label="Search results">
       {items.map((item) => (
@@ -19,6 +20,7 @@ export function ResultsList({ items, viewMode, selectedId, onSelect }: ResultsLi
           item={item}
           viewMode={viewMode}
           isSelected={item.id === selectedId}
+          isThumbHidden={hiddenThumbIds.has(item.id)}
           onSelect={onSelect}
         />
       ))}
