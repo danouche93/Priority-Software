@@ -81,6 +81,18 @@
   color: var(--text);
 }
 
+.image-container__source-link {
+  font-size: 12px;
+  color: var(--accent);
+  text-decoration: none;
+  margin-top: 4px;
+}
+
+.image-container__source-link:hover,
+.image-container__source-link:focus-visible {
+  text-decoration: underline;
+}
+
 .image-container__embed {
   width: 100%;
   max-width: 320px;

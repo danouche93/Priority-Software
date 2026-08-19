@@ -80,7 +80,7 @@ separately, so the website reloads instantly as you edit it:
 
 ```bash
 cd backend
-dotnet run --project SoundSearch.Api --urls http://localhost:5080
+dotnet run --project SoundSearch.Api --urls http://localhost:5193
 ```
 
 The backend only allows requests from `http://localhost:5173` by default.
@@ -89,7 +89,7 @@ Change this with the `AllowedOrigin` environment variable if needed.
 ```bash
 cd frontend
 npm install
-cp .env.example .env.local   # already points at http://localhost:5080
+cp .env.example .env.local   # already points at http://localhost:5193
 npm run dev
 ```
 

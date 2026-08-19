@@ -92,6 +92,14 @@ export function ImageContainer({ track }: ImageContainerProps) {
         <p className="image-container__caption">
           <span className="image-container__title">{track.title}</span>
           <span className="image-container__owner">{track.ownerName}</span>
+          <a
+            className="image-container__source-link"
+            href={track.pageUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            View on Mixcloud ↗
+          </a>
         </p>
       ) : (
         <p className="image-container__placeholder">Select a search result to see it here.</p>
