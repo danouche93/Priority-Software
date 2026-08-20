@@ -119,4 +119,4 @@ cd frontend && npm test
 - Page links (cursors) come straight from Mixcloud instead of us counting
   pages ourselves. If Mixcloud changes how paging works internally, nothing
   here needs to change.
-- Each page always shows 6 results, even if something asks for more.
+- Each page always shows 6 results, even if something asks for more
