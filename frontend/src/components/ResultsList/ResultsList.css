@@ -81,6 +81,7 @@
 
 .result-item__meta {
   display: flex;
+  flex: 1 1 0;
   flex-direction: column;
   min-width: 0;
   gap: 2px;
@@ -90,13 +91,11 @@
   font-size: 14px;
   font-weight: 600;
   color: var(--text-h);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: break-word;
+  white-space: normal;
 }
 
 .result-item--tile .result-item__title {
-  white-space: normal;
   font-size: 13px;
 }
 

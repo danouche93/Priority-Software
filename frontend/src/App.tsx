@@ -1,5 +1,5 @@
 import { MotionConfig } from 'framer-motion'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import './App.css'
 import type { TrackResult } from './api/types'
 import { FlyingImage, type FlyRect } from './components/FlyingImage/FlyingImage'
@@ -30,6 +30,7 @@ interface FlightState {
 
 const THUMB_RADIUS = '50%'
 const CONTAINER_RADIUS = '50%'
+const MOBILE_LAYOUT_QUERY = '(max-width: 900px)'
 
 function statusAnnouncement(status: string, query: string, resultCount: number): string {
   switch (status) {
@@ -134,6 +135,17 @@ function App() {
   }, [])
 
   const { status, items, query, errorMessage, nextCursor, previousCursor } = search.state
+
+  const hasRenderedItemsRef = useRef(false)
+  useEffect(() => {
+    if (!hasRenderedItemsRef.current) {
+      hasRenderedItemsRef.current = true
+      return
+    }
+    if (window.matchMedia(MOBILE_LAYOUT_QUERY).matches) {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+  }, [items])
 
   const hiddenThumbIds = useMemo(() => {
     const ids = new Set<string>()

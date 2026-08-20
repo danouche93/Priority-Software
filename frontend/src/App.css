@@ -1,6 +1,7 @@
 .app {
   min-height: 100vh;
   padding: 24px 16px 48px;
+  overflow-x: hidden;
 }
 
 .app__header {
